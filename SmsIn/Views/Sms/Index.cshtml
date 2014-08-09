@@ -1,0 +1,88 @@
+﻿@using System.Web.Optimization
+@model SmsIn.Models.SmsGrid
+
+@{
+    ViewBag.Title = "SMS Messages";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<br /><br /><br />
+
+@helper sortLink(string name, int id)
+{
+    <a href="@Url.Action("Index", "Sms", new { page = 1, sortby = id, isasc = (id == Model.SortBy ? (!Model.IsAsc).ToString() : "true")})">@name</a>
+    if (id == Model.SortBy)
+    {
+        <span class="arrow @(Model.IsAsc ? "glyphicon glyphicon-chevron-up" : "glyphicon glyphicon-chevron-down")"></span>
+    }
+}
+
+
+<table class="table table-striped">
+    <tr>
+        <th></th>
+        <th>@sortLink("Received", 1)</th>
+        <th>@sortLink("From Mobile", 2)</th>
+        <th>@sortLink("To Mobile", 3)</th>
+        <th>Message</th>
+    </tr>
+
+    @{  var i = 0;
+      foreach (var record in Model.SmsList)
+      {
+          i++;
+        <tr>
+            <td>@(i.ToString())</td>
+            <td>@(record.Received.ToString())</td>
+            <td>@(record.SenderMobile)</td>
+            <td>@(record.ReceiverMobile)</td>
+            <td>@(record.Message)</td>
+        </tr>
+      }
+    }
+</table>
+
+<ul class="pagination">
+    @for (var page = 1; page <= Model.TotalPages; page++)
+    {
+        if (Model.CurrentPage == page)
+        {
+            <li class="active"><a href="#">@(page)</a></li>
+        }
+        else
+        {
+            <li>
+                <a href="@Url.Action("Index", "Sms", new { page = @page, sortby = Model.SortBy, isasc = Model.IsAsc })">@(page)</a>
+            </li>
+        }
+    }
+</ul>
+<br />
+<div id="btnPurge" class="btn btn-danger" data-toggle="modal" data-target="#purgeModal">Purge All Messages</div>
+
+<!-- Modal purge -->
+<div class="modal fade" id="purgeModal" tabindex="-1" role="dialog" aria-labelledby="purgeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        @using (Html.BeginForm("Purge", "Sms", new { ReturnUrl = ViewBag.ReturnUrl }, FormMethod.Post, new { role = "form" }))
+        {
+            @Html.AntiForgeryToken()
+
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    <h4 class="modal-title" id="PurgeModalLabel">Pure Messages</h4>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to remove all messages?</p>
+                    <br />
+                    <p class="text-danger"><strong>This action can not be undone!</strong></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Purge</button>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+
